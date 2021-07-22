@@ -9,32 +9,22 @@ import Foundation
 
 struct MemorizeGame<CardContent> where CardContent: Equatable {
     private(set) var cards: Array<Card>
-    private(set) var theme: Theme
     
-    private var indexOfTheOneAndOnlyFaceUpCard: Int?
+    private var indexOfTheOneAndOnlyFaceUpCard: Int? {
+        get {cards.indices.filter{cards[$0].isFaceUp}.oneAndOnly}
+        set {cards.indices.forEach{cards[$0].isFaceUp = ($0 == newValue)}}
+    }
     
-    init(nameOfTheme: String,
-         setOfEmojis: [CardContent],
-         numberOfPairOfCard: Int,
-         cardColor: [Int],
-         createCardContent: (Int) -> CardContent
-    ) {
-        theme = Theme(name: nameOfTheme,
-                      setOfEmojis: setOfEmojis,
-                      numberOfPairOfCard: numberOfPairOfCard,
-                      cardColor: cardColor, id: 0)
-        
-        cards = Array<Card>()
-        
-        for pairIndex in 0..<theme.numberOfPairOfCard {
+    init(numberOfPairOfCard: Int, createCardContent: (Int) -> CardContent) {
+        cards = []
+        for pairIndex in 0..<numberOfPairOfCard {
             let content = createCardContent(pairIndex)
             cards.append(Card(content: content, id: pairIndex*2))
             cards.append(Card(content: content, id: pairIndex*2 + 1))
         }
-        cards = cards.shuffled()
     }
     
-    mutating func chooseCard(_ card: Card) {
+    mutating func choose(_ card: Card) {
         if let chooseIndex = cards.firstIndex(where: {$0.id == card.id}),
               !cards[chooseIndex].isMatched,
               !cards[chooseIndex].isFaceUp
@@ -44,37 +34,29 @@ struct MemorizeGame<CardContent> where CardContent: Equatable {
                     cards[potentialMatchIndex].isMatched = true
                     cards[chooseIndex].isMatched = true
                 }
-                indexOfTheOneAndOnlyFaceUpCard = nil
+                cards[chooseIndex].isFaceUp = true
             }
             else {
-                for index in cards.indices {
-                    cards[index].isFaceUp = false
-                }
                 indexOfTheOneAndOnlyFaceUpCard = chooseIndex
             }
-            cards[chooseIndex].isFaceUp.toggle()
         }
     }
-    mutating func changeTheme(_ newTheme: MemorizeGame<CardContent>)  {
-        theme = newTheme.theme
-        cards = newTheme.cards
-    }
-    
-    struct Card: Identifiable{
-        var isFaceUp: Bool = false
-        var isMatched: Bool = false
-        var content: CardContent
-        
-        var id: Int
-    }
-    
-    struct Theme: Identifiable{
-        var name: String
-        var setOfEmojis: [CardContent]
-        var numberOfPairOfCard: Int
-        var cardColor: [Int]
 
-        var id: Int
+    struct Card: Identifiable{
+        var isFaceUp = true
+        var isMatched = false
+        let content: CardContent
+        let id: Int
     }
     
+}
+
+extension Array {
+    var oneAndOnly: Element?{
+        if count == 1 {
+            return first
+        } else {
+                return nil
+        }
+    }
 }
