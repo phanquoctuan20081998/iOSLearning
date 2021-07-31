@@ -14,7 +14,7 @@ class EmojiMemorizeGame: ObservableObject {
                 "🚟", "✈️", "🚞", "🚝", "🚲", "🚀", "🛸", "🚁", "⛵️", "🛴", "🛵"]
     
     static func createMemorizeGame() -> MemorizeGame<String> {
-        MemorizeGame<String>(numberOfPairOfCard: 4) {pairIndex in emojis[pairIndex]}
+        MemorizeGame<String>(numberOfPairOfCard: 6) {pairIndex in emojis[pairIndex]}
     }
 
     @Published private var model = createMemorizeGame()
